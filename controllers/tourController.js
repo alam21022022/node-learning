@@ -1,9 +1,10 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-// const mongoose = require('mongoose');
 const Tour = require('../models/tourModel');
 const APIfeatures = require('../utils/utils');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 
 exports.aliasTopTours = (req, res, next) => {
   req.query.limit = '5';
@@ -31,37 +32,27 @@ exports.getAllTours = async (req, res) => {
   }
 };
 
-exports.getTour = async (req, res) => {
-  try {
-    // const tour = Tour.findOne({ _id: req.params.id }); // old way
-    const tour = await Tour.findById(req.params.id); // new Way
-    res.status(200).json({
-      status: 'success',
-      data: {
-        tour,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({ status: 'fail', message: err });
+exports.getTour = catchAsync(async (req, res, next) => {
+  const tour = await Tour.findById(req.params.id); // new Way
+  if (!tour) {
+    return next(new AppError(`No tour found with Id ${req.params.id} `, 404));
   }
-};
+  res.status(200).json({
+    status: 'success',
+    data: {
+      tour,
+    },
+  });
+});
 
-exports.createTour = async (req, res) => {
-  // older way
-  // const newTour = new Tour({});
-  // newTour.save();
+exports.createTour = catchAsync(async (req, res, next) => {
+  const newTour = await Tour.create(req.body);
 
-  // new Ways
-  try {
-    const newTour = await Tour.create(req.body);
-    res.status(201).json({
-      status: 'success',
-      data: { tour: newTour },
-    });
-  } catch (err) {
-    res.status(400).json({ status: 'fail', message: err });
-  }
-};
+  res.status(201).json({
+    status: 'success',
+    data: { tour: newTour },
+  });
+});
 
 exports.updateTour = async (req, res) => {
   // console.log(req.body);
@@ -170,6 +161,38 @@ exports.monthlyPlan = async (req, res) => {
     res.status(400).json({ status: 'fail', message: err });
   }
 };
+
+/*exports.getTour = catchAsync(async (req, res) => {
+  try {
+    // const tour = Tour.findOne({ _id: req.params.id }); // old way
+    const tour = await Tour.findById(req.params.id); // new Way
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tour,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({ status: 'fail', message: err });
+  }
+});
+
+*/
+// Crete Tour
+// older way
+// const newTour = new Tour({});
+// newTour.save();
+// new Ways
+// try {
+//   const newTour = await Tour.create(req.body);
+//   res.status(201).json({
+//     status: 'success',
+//     data: { tour: newTour },
+//   });
+// } catch (err) {
+//   res.status(400).json({ status: 'fail', message: err });
+// }
+// };
 
 // Read the data from dev-data
 // const filePath = path.join(
