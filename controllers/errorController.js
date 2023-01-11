@@ -1,3 +1,31 @@
+const AppError = require('.././utils/appError');
+
+const handleCastErrorDB = (err) => {
+  const message = `Invalid ${err.path}: ${err.value}`;
+  return new AppError(message, 400);
+};
+
+const handleDuplicateFieldsDB = (err) => {
+  const message = `Duplicate Field Value: '${err.keyValue.name}' Please Use another Value`;
+  return new AppError(message, 400);
+};
+
+const handleValidationErrorDb = (err) => {
+  const value = Object.values(err.errors)
+    .map((el) => el.message)
+    .join('. ');
+  const message = `Invalid Input: ${value}`;
+  return new AppError(message, 400);
+};
+
+const handleTokenError = (err) => {
+  return new AppError(`Invalid token. Please login again !`, 401);
+};
+
+const handleTokenExpireError = (err) => {
+  return new AppError(`Token Expired. Please login again !`, 401);
+};
+
 const ErrorProduction = (err, res) => {
   // Operational Trusted Error
   if (err.isOperational) {
@@ -13,6 +41,7 @@ const ErrorProduction = (err, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Something went very wrong ',
+      error: err,
     });
   }
 };
@@ -31,5 +60,21 @@ module.exports = (err, req, res, next) => {
   err.status = err.status || 'error';
 
   process.env.NODE_ENV === 'development' && ErrorDevelopment(err, res);
-  process.env.NODE_ENV === 'production' && ErrorProduction(err, res);
+  if (process.env.NODE_ENV === 'production') {
+    let error = { ...err };
+    error.name = err.name;
+    if (error.name === 'CastError') {
+      error = handleCastErrorDB(error);
+    }
+    if (error.code === 11000) {
+      error = handleDuplicateFieldsDB(error);
+    }
+    if (error.name === 'ValidationError')
+      error = handleValidationErrorDb(error);
+    if (error.name === 'JsonWebTokenError') error = handleTokenError(error);
+
+    if (error.name === 'TokenExpiredError')
+      error = handleTokenExpireError(error);
+    ErrorProduction(error, res);
+  }
 };

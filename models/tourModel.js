@@ -5,7 +5,7 @@ const tourSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      unique: true,
+      unique: [true, 'A name must be unique'],
       required: [true, 'A tour must have a Name'],
       maxlength: [20, 'A tour length must be less then or equal to 40'],
       minlength: [10, 'A tour length must be greater then or equal to 10'],
@@ -30,6 +30,7 @@ const tourSchema = new mongoose.Schema(
     ratingsAverage: {
       type: Number,
       default: 4.5,
+      max: [5, 'A Rating should not be more then 5'],
     },
     ratingsQuantity: {
       type: Number,
@@ -38,6 +39,17 @@ const tourSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: [true, 'A tour must have a price'],
+    },
+    priceDiscount: {
+      type: Number,
+      validate: {
+        //val ==> price discount me jo val aaiga wahe hai
+        validator: function (val) {
+          // this only point to the current on New Document Creation
+          return this.price > val;
+        },
+        message: 'Discount Price ({VALUE}) should be below regular price',
+      },
     },
     summary: {
       type: String,
@@ -73,7 +85,7 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
-// virtuals
+// virtual
 
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
@@ -97,13 +109,12 @@ tourSchema.virtual('durationWeeks').get(function () {
 
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
-
   this.start = Date.now();
   next();
 });
 
 tourSchema.post(/^find/, function (docs, next) {
-  console.log(`This Query Tooks ${Date.now() - this.start} miliseconds`);
+  console.log(`This Query Taken ${Date.now() - this.start} milliseconds`);
   next();
 });
 
