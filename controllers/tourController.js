@@ -54,21 +54,17 @@ exports.createTour = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.updateTour = async (req, res) => {
+exports.updateTour = catchAsync(async (req, res, next) => {
   // console.log(req.body);
-  try {
-    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    res.status(200).json({
-      status: 'success',
-      data: { tour },
-    });
-  } catch (err) {
-    res.status(400).json({ status: 'fail', message: err });
-  }
-};
+  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+  res.status(200).json({
+    status: 'success',
+    data: { tour },
+  });
+});
 
 exports.deleteTour = async (req, res) => {
   try {
@@ -177,22 +173,24 @@ exports.monthlyPlan = async (req, res) => {
   }
 });
 
-*/
+
 // Crete Tour
 // older way
-// const newTour = new Tour({});
-// newTour.save();
+const newTour = new Tour({});
+newTour.save();
 // new Ways
-// try {
-//   const newTour = await Tour.create(req.body);
-//   res.status(201).json({
-//     status: 'success',
-//     data: { tour: newTour },
-//   });
-// } catch (err) {
-//   res.status(400).json({ status: 'fail', message: err });
-// }
-// };
+try {
+  const newTour = await Tour.create(req.body);
+  res.status(201).json({
+    status: 'success',
+    data: { tour: newTour },
+  });
+} catch (err) {
+  res.status(400).json({ status: 'fail', message: err });
+}
+};
+
+*/
 
 // Read the data from dev-data
 // const filePath = path.join(
