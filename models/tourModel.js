@@ -85,7 +85,7 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
-// virtuals
+// virtual
 
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
@@ -109,13 +109,12 @@ tourSchema.virtual('durationWeeks').get(function () {
 
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
-
   this.start = Date.now();
   next();
 });
 
 tourSchema.post(/^find/, function (docs, next) {
-  console.log(`This Query Tooks ${Date.now() - this.start} miliseconds`);
+  console.log(`This Query Taken ${Date.now() - this.start} milliseconds`);
   next();
 });
 

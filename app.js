@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
-
+const crypto = require('crypto');
 process.on('uncaughtException', (err) => {
   console.log(err.name, err.message);
   console.log('Uncaugth Exception Shutting down ');
@@ -53,10 +53,6 @@ app.all('*', (req, res, next) => {
 // Global Error
 app.use(globalErrorHandler);
 
-const server = app.listen(8000, () => {
-  console.log(`Server is running to the port ${PORT}`);
-});
-
 process.on('unhandledRejection', (err) => {
   console.log(err.name, err.message);
   console.log('Unhandled Rejection Shutting down');
@@ -64,3 +60,9 @@ process.on('unhandledRejection', (err) => {
     process.exit(1);
   });
 });
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}`);
+});
+
+console.log({ PORT });

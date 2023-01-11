@@ -21,7 +21,7 @@ exports.getAllTours = async (req, res) => {
       .sort()
       .limitFields()
       .paginate();
-    // const tours = await query
+    // const tours   = await query
     const tours = await features.query;
 
     res

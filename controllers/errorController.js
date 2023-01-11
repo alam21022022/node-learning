@@ -18,6 +18,14 @@ const handleValidationErrorDb = (err) => {
   return new AppError(message, 400);
 };
 
+const handleTokenError = (err) => {
+  return new AppError(`Invalid token. Please login again !`, 401);
+};
+
+const handleTokenExpireError = (err) => {
+  return new AppError(`Token Expired. Please login again !`, 401);
+};
+
 const ErrorProduction = (err, res) => {
   // Operational Trusted Error
   if (err.isOperational) {
@@ -63,6 +71,10 @@ module.exports = (err, req, res, next) => {
     }
     if (error.name === 'ValidationError')
       error = handleValidationErrorDb(error);
+    if (error.name === 'JsonWebTokenError') error = handleTokenError(error);
+
+    if (error.name === 'TokenExpiredError')
+      error = handleTokenExpireError(error);
     ErrorProduction(error, res);
   }
 };
